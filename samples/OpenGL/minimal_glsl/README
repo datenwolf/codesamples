@@ -1,0 +1,3 @@
+Minimal example for GLSL usage.
+
+Creates a OpenGL window and context using GLFW. Extensions provided by GLEW.

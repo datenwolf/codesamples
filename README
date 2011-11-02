@@ -1,0 +1,17 @@
+# datenwolf's Code Samples
+
+This is a growing collection of code samples, fully working
+demonstration programs I wrote as supplementary material for
+articles posted at forums, newsgroups, Q&A sites, blogs,
+and so on.
+
+## Structure
+
+Organization is by topic:
+
+* samples/lang/ language specific programming techniques.
+
+* samples/OpenGL/ Everything covering OpenGL, multiple languages
+
+* tools/ Supplementary tools and helpers, for example boilerplate code generators
+
