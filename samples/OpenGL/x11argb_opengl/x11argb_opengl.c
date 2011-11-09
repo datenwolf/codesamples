@@ -222,7 +222,7 @@ static void createTheRenderContext()
 		fatalError("OpenGL not supported by X server\n");
 	}
 
-	render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, False);
+	render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, True);
 	if (!render_context) {
 		fatalError("Failed to create a GL context\n");
 	}
@@ -259,6 +259,15 @@ static int updateTheMessageQueue()
 	return 1;
 }
 
+/*  6----7
+   /|   /|
+  3----2 |
+  | 5--|-4
+  |/   |/
+  0----1
+
+*/
+
 GLfloat cube_vertices[][8] =  {
 	/*  X     Y     Z   Nx   Ny   Nz    S    T */
 	{-1.0, -1.0,  1.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // 0
@@ -266,30 +275,30 @@ GLfloat cube_vertices[][8] =  {
 	{ 1.0,  1.0,  1.0, 0.0, 0.0, 1.0, 1.0, 1.0}, // 2
 	{-1.0,  1.0,  1.0, 0.0, 0.0, 1.0, 0.0, 1.0}, // 3
 
-	{ 1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0},
-	{-1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 0.0},
-	{-1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0},
-	{ 1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0},
+	{ 1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0}, // 4
+	{-1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 0.0}, // 5
+	{-1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0}, // 6
+	{ 1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0}, // 7
 
-	{-1.0, -1.0,  1.0, -1.0, 0.0, 0.0, 0.0, 0.0},
-	{-1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 0.0},
-	{-1.0,  1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0},
-	{-1.0,  1.0,  1.0, -1.0, 0.0, 0.0, 0.0, 1.0},
+	{-1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0}, // 5
+	{-1.0, -1.0,  1.0, -1.0, 0.0, 0.0, 1.0, 0.0}, // 0
+	{-1.0,  1.0,  1.0, -1.0, 0.0, 0.0, 1.0, 1.0}, // 3
+	{-1.0,  1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0}, // 6
 	
-	{ 1.0, -1.0, -1.0,  1.0, 0.0, 0.0, 0.0, 0.0},
-	{ 1.0, -1.0,  1.0,  1.0, 0.0, 0.0, 1.0, 0.0},
-	{ 1.0,  1.0,  1.0,  1.0, 0.0, 0.0, 1.0, 1.0},
-	{ 1.0,  1.0, -1.0,  1.0, 0.0, 0.0, 0.0, 1.0},
+	{ 1.0, -1.0,  1.0,  1.0, 0.0, 0.0, 0.0, 0.0}, // 1
+	{ 1.0, -1.0, -1.0,  1.0, 0.0, 0.0, 1.0, 0.0}, // 4
+	{ 1.0,  1.0, -1.0,  1.0, 0.0, 0.0, 1.0, 1.0}, // 7
+	{ 1.0,  1.0,  1.0,  1.0, 0.0, 0.0, 0.0, 1.0}, // 2
 	
-	{ 1.0, -1.0, -1.0,  0.0, -1.0, 0.0, 0.0, 0.0},
-	{-1.0, -1.0, -1.0,  0.0, -1.0, 0.0, 1.0, 0.0},
-	{-1.0, -1.0,  1.0,  0.0, -1.0, 0.0, 1.0, 1.0},
-	{ 1.0, -1.0,  1.0,  0.0, -1.0, 0.0, 0.0, 1.0},
+	{-1.0, -1.0, -1.0,  0.0, -1.0, 0.0, 0.0, 0.0}, // 5
+	{ 1.0, -1.0, -1.0,  0.0, -1.0, 0.0, 1.0, 0.0}, // 4
+	{ 1.0, -1.0,  1.0,  0.0, -1.0, 0.0, 1.0, 1.0}, // 1
+	{-1.0, -1.0,  1.0,  0.0, -1.0, 0.0, 0.0, 1.0}, // 0
 
-	{-1.0, 1.0,  1.0,  0.0,  1.0, 0.0, 0.0, 0.0},
-	{ 1.0, 1.0,  1.0,  0.0,  1.0, 0.0, 1.0, 0.0},
-	{ 1.0, 1.0, -1.0,  0.0,  1.0, 0.0, 1.0, 1.0},
-	{-1.0, 1.0, -1.0,  0.0,  1.0, 0.0, 0.0, 1.0},
+	{-1.0, 1.0,  1.0,  0.0,  1.0, 0.0, 0.0, 0.0}, // 3
+	{ 1.0, 1.0,  1.0,  0.0,  1.0, 0.0, 1.0, 0.0}, // 2
+	{ 1.0, 1.0, -1.0,  0.0,  1.0, 0.0, 1.0, 1.0}, // 7
+	{-1.0, 1.0, -1.0,  0.0,  1.0, 0.0, 0.0, 1.0}, // 6
 };
 
 static void draw_cube(void)
@@ -305,8 +314,14 @@ static void draw_cube(void)
 	glDrawArrays(GL_QUADS, 0, 24);
 }
 
-float const light_dir[]={1,1,1,0};
-float const light_color[]={1,0.95,0.9,1};
+float const light0_dir[]={0,1,0,0};
+float const light0_color[]={78./255., 80./255., 184./255.,1};
+
+float const light1_dir[]={-1,1,1,0};
+float const light1_color[]={255./255., 220./255., 97./255.,1};
+
+float const light2_dir[]={0,-1,0,0};
+float const light2_color[]={31./255., 75./255., 16./255.,1};
 
 static void redrawTheWindow()
 {
@@ -332,10 +347,19 @@ static void redrawTheWindow()
 	glLoadIdentity();
 
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
-	glLightfv(GL_LIGHT0, GL_POSITION, light_dir);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_color);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light0_dir);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_color);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, light1_dir);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_color);
+
+	glLightfv(GL_LIGHT2, GL_POSITION, light2_dir);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, light2_color);
 
 	glTranslatef(0., 0., -5.);
 
@@ -344,8 +368,17 @@ static void redrawTheWindow()
 	glRotatef(c, 0, 0, 1);
 
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHTING);
 
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	glColor4f(1., 1., 1., 0.5);
+
+	glCullFace(GL_FRONT);
+	draw_cube();
+	glCullFace(GL_BACK);
 	draw_cube();
 
 	a = fmod(a+0.1, 360.);

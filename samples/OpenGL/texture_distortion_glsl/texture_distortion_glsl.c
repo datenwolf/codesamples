@@ -34,12 +34,17 @@ GLuint shaderVertex = 0;
 
 static const GLchar *fragment_shader_source = 
 "#version 120\n"
-"uniform sampler2D texCMYK;"
-"uniform sampler2D texRGB;"
-"void main()"
-"{"
-"   gl_FragColor = -texture2D(texCMYK, gl_TexCoord[0].st) + texture2D(texRGB, gl_TexCoord[0].st);"
-"}\0";
+"uniform sampler2D texCMYK;\n"
+"uniform sampler2D texRGB;\n"
+"uniform float T;\n"
+"const float pi = 3.14159265;\n"
+"void main()\n"
+"{\n"
+"   float ts = gl_TexCoord[0].s;\n"
+"   vec2 mod_texcoord = gl_TexCoord[0].st*vec2(1., 2.) + vec2(0, -0.5 + 0.5*sin(T + 1.5*ts*pi));\n"
+"   if( mod_texcoord.t < 0. || mod_texcoord.t > 1. ) { discard; }\n"
+"   gl_FragColor = -texture2D(texCMYK, mod_texcoord) + texture2D(texRGB, gl_TexCoord[0].st);\n"
+"}\n\0";
 GLuint shaderFragment = 0;
 
 GLuint shaderProgram = 0;
@@ -144,7 +149,7 @@ static void display(double T)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-window_aspect, window_aspect, -1, 1, 2, 10);
+    glFrustum(-window_aspect, window_aspect, -1, 1, 2.5, 10);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -156,6 +161,7 @@ static void display(double T)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glUseProgram(shaderProgram);
+    glUniform1f(glGetUniformLocation(shaderProgram, "T"), T);
     bind_sampler_to_unit_with_texture("texCMYK", 0, texCMYK);
     bind_sampler_to_unit_with_texture("texRGB", 1, texRGB);
 
@@ -203,7 +209,7 @@ static int check_shader_compilation(GLuint shader)
 {
     GLint n;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &n);
-        if( n == GL_FALSE ) {
+    if( n == GL_FALSE ) {
         GLchar *info_log;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &n);
         info_log = malloc(n);
@@ -283,4 +289,3 @@ int main(int argc, char *argv[])
     glfwTerminate();
     return 0;
 }
-
