@@ -62,7 +62,7 @@ static const GLchar *fragment_shader_source =
 "   vec2 mod_texcoord = gl_TexCoord[0].st*vec2(1., 2.) + vec2(0, -0.5 + 0.5*sin(T + 1.5*ts*pi));\n"
 "   if( mod_texcoord.t < 0. || mod_texcoord.t > 1. ) { discard; }\n"
 "   gl_FragColor = -texture2D(texCMYK, mod_texcoord) + texture2D(texRGB, gl_TexCoord[0].st);\n"
-"   gl_FragColor.a = 1.0;\n"
+"   gl_FragColor.a = -0.5;\n"
 "}\n\0";
 GLuint shaderFragment = 0;
 
@@ -245,11 +245,11 @@ static void createTheWindow()
 
 	width = DisplayWidth(Xdisplay, DefaultScreen(Xdisplay))/2;
 	height = DisplayHeight(Xdisplay, DefaultScreen(Xdisplay))/2;
-	x=width/2, y=height/2;
+	int const dim = width < height ? width : height;
 
 	window_handle = XCreateWindow(	Xdisplay,
 					Xroot,
-					x, y, width, height,
+					0, 0, dim, dim,
 					0,
 					visual->depth,
 					InputOutput,
@@ -275,11 +275,14 @@ static void createTheWindow()
 	textprop.format = 8;
 	textprop.nitems = strlen(title);
 
-	hints.x = x;
-	hints.y = y;
-	hints.width = width;
-	hints.height = height;
-	hints.flags = USPosition|USSize;
+	hints.width = dim;
+	hints.height = dim;
+	hints.min_aspect.x = 1;
+	hints.min_aspect.y = 1;
+	hints.max_aspect.x = 1;
+	hints.max_aspect.y = 1;
+
+	hints.flags = USSize|PAspect;
 
 	startup_state = XAllocWMHints();
 	startup_state->initial_state = NormalState;
@@ -461,7 +464,10 @@ static void redrawTheWindow(double T)
 
     glDisable(GL_SCISSOR_TEST);
 
-    glClearColor(0., 0., 0., 0.0);
+#if 0
+    glClearColor(88./255., 95./255., 160./255., 0.);
+#endif
+    glClearColor(0., 0., 0., 0.);
     glClearDepth(1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
