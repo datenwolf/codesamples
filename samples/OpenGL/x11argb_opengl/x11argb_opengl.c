@@ -246,6 +246,12 @@ static void createTheWindow()
 	}
 }
 
+static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
+{
+    fputs("Error at context creation", stderr);
+    return 0;
+}
+
 static void createTheRenderContext()
 {
 	int dummy;
@@ -269,7 +275,13 @@ static void createTheRenderContext()
 				None
 			};
 
+			int (*oldHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&ctxErrorHandler);
+			
 			render_context = glXCreateContextAttribsARB( Xdisplay, fbconfig, 0, True, context_attribs );
+
+			XSync( Xdisplay, False );
+			XSetErrorHandler( oldHandler );
+
 			fputs("glXCreateContextAttribsARB failed", stderr);
 		} else {
 			fputs("glXCreateContextAttribsARB could not be retrieved", stderr);
