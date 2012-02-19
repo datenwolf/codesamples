@@ -423,8 +423,10 @@ static void redrawTheWindow()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+#if 0
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#endif
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_dir);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_color);
