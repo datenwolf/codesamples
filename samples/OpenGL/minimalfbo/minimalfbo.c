@@ -6,7 +6,6 @@
 #include <math.h>
 
 void init();
-void reshape(int width, int height);
 void display();
 
 int const fbo_width = 512;
