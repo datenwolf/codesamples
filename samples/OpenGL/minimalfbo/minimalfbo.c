@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
 
 	glutCreateWindow("FBO test");
 	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
 	glutIdleFunc(glutPostRedisplay);
 
 	glewInit();
@@ -81,11 +80,6 @@ void init()
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
 
 	CHECK_FRAMEBUFFER_STATUS();
-}
-
-void reshape(int width, int height)
-{
-	glutPostRedisplay();
 }
 
 void prepare()
