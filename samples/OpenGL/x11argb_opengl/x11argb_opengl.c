@@ -470,7 +470,9 @@ int main(int argc, char *argv[])
 	createTheRenderContext();
 
 	while (updateTheMessageQueue()) {
+	#if 0
 		redrawTheWindow();
+	#endif
 	}
 
 	return 0;
