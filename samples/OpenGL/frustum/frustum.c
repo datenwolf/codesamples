@@ -14,7 +14,7 @@ int window_observer;
 
 /* == basic Q^3 vector math functions == */
 
-void crossproduct(
+static void crossproduct(
 	double ax, double ay, double az,
 	double bx, double by, double bz,
 	double *rx, double *ry, double *rz )
@@ -24,7 +24,7 @@ void crossproduct(
 	*rz = ax*by - ay*bx;
 }
 
-void crossproduct_v(
+static void crossproduct_v(
 	double const * const a,
 	double const * const b,
 	double * const c )
@@ -35,14 +35,14 @@ void crossproduct_v(
 		c, c+1, c+2 );
 }
 
-double scalarproduct(
+static double scalarproduct(
 	double ax, double ay, double az,
 	double bx, double by, double bz )
 {
 	return ax*bx + ay*by + az*bz;
 }
 
-double scalarproduct_v(
+static double scalarproduct_v(
 	double const * const a,
 	double const * const b )
 {
@@ -51,7 +51,7 @@ double scalarproduct_v(
 		b[0], b[1], b[2] );
 }
 
-double length(
+static double length(
 	double ax, double ay, double az )
 {
 	return sqrt(
@@ -60,12 +60,12 @@ double length(
 			ax, ay, az ) );
 }
 
-double length_v( double const * const a )
+static double length_v( double const * const a )
 {
 	return sqrt( scalarproduct_v(a, a) );
 }
 
-double normalize(
+static double normalize(
 	double *x, double *y, double *z)
 {
 	double const k = 1./length(*x, *y, *z);
@@ -75,7 +75,7 @@ double normalize(
 	*z *= k;
 }
 
-double normalize_v( double *a )
+static double normalize_v( double *a )
 {
 	double const k = 1./length_v(a);
 	a[0] *= k;
@@ -241,17 +241,80 @@ void draw_frustum(
 	glLineStipple(1, 0xffff);
 	glDisable(GL_LINE_STIPPLE);
 	glDrawElements(GL_LINES, 2*4*3, GL_UNSIGNED_SHORT, idx_vol);
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glLineWidth(1);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	draw_arrow(0, 0,  0, 0, 0, -n, 0.1, 0.1, "near=1.0", 0.075);
+	draw_arrow(l, 0, -n, 0, 0, -n, 0.1, 0, "left", 0.075);
+	draw_arrow(0, 0, -n, r, 0, -n, 0, 0.1, "right", 0.075);
+	draw_arrow(0, b, -n, 0, 0, -n, 0.1, 0, "bottom", 0.075);
+	draw_arrow(0, 0, -n, 0, t, -n, 0, 0.1, "top", 0.075);
+}
+
+static void draw_grid1d(
+	float ax, float ay, float az, /* grid advance */
+	float dx, float dy, float dz, /* grid direction */
+	float l0, float l1,           /* grid line range */
+	int major, int begin, int end,/* major line modulus; grid begin, end */
+	float or, float og, float ob  /* origin line color r,g,b */ )
+{
 }
 
 /* == scene drawing code == */
 
+#define N_LIGHTS 2
+struct {
+	GLfloat diffuse[3];
+	GLfloat position[4];
+} light[N_LIGHTS] = {
+	{ {255./255., 202./255., 99./255.}, {-1, 1, 1, 0} },
+	{ {30./255, 38./255., 82./255.}, { 0, 1, -0.4, 0} },
+};
+
+void draw_scene(void)
+{
+	glPushMatrix();
+	glTranslatef(0, 0, -2.5);
+
+	for(int i = 0; i < N_LIGHTS; i++) {
+		glEnable( GL_LIGHT0 + i);
+		glLightfv(GL_LIGHT0 + i, GL_DIFFUSE,  light[i].diffuse);
+		glLightfv(GL_LIGHT0 + i, GL_POSITION, light[i].position);
+	}
+
+	glEnable(GL_LIGHTING);
+
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	glPushMatrix();
+	glTranslatef(-0.75, 0, -0.5);
+	glRotatef(45, 0, 1, 0);
+
+	glColor3f(0.9, 0.9, 0.9);
+	glutSolidTeapot(0.6);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.5, 0, 0.5);
+	glRotatef(45, 0, 1, 0);
+
+	glColor3f(0.9, 0.9, 0.9);
+	glutSolidCube(0.6);
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
+/* == display functions == */
+
+struct {
+	float left, right, bottom, top;
+	float near, far;
+} frustum = {-1, 1, -1, 1, 1, 4};
+
 void display_observer(float frustum_aspect)
 {
-	static float alpha = 0;
-
 	int const win_width  = glutGet(GLUT_WINDOW_WIDTH);
 	int const win_height = glutGet(GLUT_WINDOW_HEIGHT);
 	float const win_aspect = (float)win_width / (float)win_height;
@@ -265,44 +328,37 @@ void display_observer(float frustum_aspect)
 #ifdef USE_ORTHO
 	glOrtho(-10*win_aspect, 10*win_aspect, -10, 10, 0, 100);
 #else
-	gluPerspective(35, win_aspect, 1, 50);
+	gluPerspective(60, win_aspect, 1, 50);
 #endif
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if(1) {
 		glTranslatef(0, 0, -5);
-		glRotatef(30, 1, 0, 0);
-		glRotatef(alpha, 0, 1, 0);
+		glRotatef(15, 1, 0, 0);
+		glRotatef(-60, 0, 1, 0);
 		glTranslatef(0, 0, 2.5);
 	} else {
 		gluLookAt(3, 1, -5, 0, 0, -2.5, 0, 1, 0);
 	}
 
-	float const l = -0.5*frustum_aspect,
-	            r =  0.5*frustum_aspect,
-		    b = -0.5,
-		    t =  0.5,
-		    n =  1,
-		    f =  4;
-
 	glEnable(GL_MULTISAMPLE);
 
+	glDisable(GL_LIGHTING);
+	glDepthMask(GL_TRUE);
 	glColor3f(0.,0.,0.);
-	draw_frustum(l, r, b, t, n, f);
+	draw_frustum(
+		frustum.left,
+		frustum.right,
+		frustum.bottom,
+		frustum.top,
+		frustum.near,
+		frustum.far );
 
-	glLineWidth(1);
-	draw_arrow(0, 0, 0, 0, 0, -n, 0.1, 0.1, "near", 0.075);
-
-	draw_arrow(l, 0, -n, 0, 0, -n, 0.1, 0, "left", 0.075);
-	draw_arrow(0, 0, -n, r, 0, -n, 0, 0.1, "right", 0.075);
-	draw_arrow(0, b, -n, 0, 0, -n, 0.1, 0, "bottom", 0.075);
-	draw_arrow(0, 0, -n, 0, t, -n, 0, 0.1, "top", 0.075);
+	glEnable(GL_DEPTH_TEST);
+	draw_scene();
 
 	glutSwapBuffers();
-
-	alpha = fmodf(alpha + 0.1, 360);
-	glutPostRedisplay();
 }
 
 void display_view(int const win_width, int const win_height)
@@ -312,6 +368,24 @@ void display_view(int const win_width, int const win_height)
 	glViewport(0, 0, win_width, win_height);
 	glClearColor(0.3, 0.3, 0.6, 1.);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(
+		frustum.left,
+		frustum.right,
+		frustum.bottom,
+		frustum.top,
+		frustum.near,
+		frustum.far );
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_MULTISAMPLE);
+
+	draw_scene();
 
 	glutSwapBuffers();
 }
