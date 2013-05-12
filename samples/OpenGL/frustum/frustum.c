@@ -9,6 +9,9 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+int window_view;
+int window_observer;
+
 /* == basic Q^3 vector math functions == */
 
 void crossproduct(
@@ -240,7 +243,7 @@ void draw_frustum(
 
 /* == scene drawing code == */
 
-void display_observer(void)
+void display_observer(float frustum_aspect)
 {
 	static float alpha = 0;
 
@@ -271,8 +274,8 @@ void display_observer(void)
 		gluLookAt(3, 1, -5, 0, 0, -2.5, 0, 1, 0);
 	}
 
-	float const l = -0.5,
-	            r =  0.5,
+	float const l = -0.5*frustum_aspect,
+	            r =  0.5*frustum_aspect,
 		    b = -0.5,
 		    t =  0.5,
 		    n =  1,
@@ -297,10 +300,8 @@ void display_observer(void)
 	glutPostRedisplay();
 }
 
-void display_frustum_view(void)
+void display_view(int const win_width, int const win_height)
 {
-	int const win_width  = glutGet(GLUT_WINDOW_WIDTH);
-	int const win_height = glutGet(GLUT_WINDOW_HEIGHT);
 	float const win_aspect = (float)win_width / (float)win_height;
 
 	glViewport(0, 0, win_width, win_height);
@@ -310,16 +311,28 @@ void display_frustum_view(void)
 	glutSwapBuffers();
 }
 
+void display(void)
+{
+	glutSetWindow(window_view);
+	int const win_view_width  = glutGet(GLUT_WINDOW_WIDTH);
+	int const win_view_height = glutGet(GLUT_WINDOW_HEIGHT);
+	float const win_view_aspect = (float)win_view_width / (float)win_view_height;
+	display_view(win_view_width, win_view_height);
+
+	glutSetWindow(window_observer);
+	display_observer(win_view_aspect);
+}
+
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 
-	glutCreateWindow("Observer");
-	glutDisplayFunc(display_observer);
+	window_observer = glutCreateWindow("Observer");
+	glutDisplayFunc(display);
 
-	glutCreateWindow("Frustum View");
-	glutDisplayFunc(display_frustum_view);
+	window_view = glutCreateWindow("Frustum View");
+	glutDisplayFunc(display);
 
 	glutMainLoop();
 	return 0;
