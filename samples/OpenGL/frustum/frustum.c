@@ -125,6 +125,9 @@ void draw_arrow(
 	};
 	normalize_v(d);
 
+	double r[3] = { mv[0], mv[4], mv[8] };
+	int rev = scalarproduct_v(d, r) < 0.;
+
 	double n[3] = { mv[2], mv[6], mv[10] };
 	{
 		double const s = scalarproduct_v(d,n);
@@ -173,9 +176,9 @@ void draw_arrow(
 			w += glutStrokeWidth(GLUT_STROKE_ROMAN, *c);
 		w *= annot_size / 100.;
 
-		float tx = (ax + bx - w*d[0])/2.;
-		float ty = (ay + by - w*d[1])/2.;
-		float tz = (az + bz - w*d[2])/2.;
+		float tx = (ax + bx)/2.;
+		float ty = (ay + by)/2.;
+		float tz = (az + bz)/2.;
 
 		GLdouble r[16] = {
 			d[0], d[1], d[2], 0,
@@ -186,7 +189,9 @@ void draw_arrow(
 		glPushMatrix();
 		glTranslatef(tx, ty, tz);
 		glMultMatrixd(r);
-		glTranslatef(0, annot_size*0.1, 0);
+		if(rev)
+			glScalef(-1, -1, 1);
+		glTranslatef(-w/2., annot_size*0.1, 0);
 		draw_strokestring(GLUT_STROKE_ROMAN, annot_size, annotation);
 		glPopMatrix();
 	}
