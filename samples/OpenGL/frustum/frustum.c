@@ -9,6 +9,15 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+#if defined(GLUT_MULTISAMPLE) && defined(GL_MULTISAMPLE)
+#define OPTION_GLUT_MULTISAMPLE GLUT_MULTISAMPLE
+#define OPTION_MULTISAMPLE 1
+#else
+#define OPTION_GLUT_MULTISAMPLE 0
+#define OPTION_MULTISAMPLE 0
+#warning "multisample token(s) not available at compiletime"
+#endif
+
 int window_view;
 int window_observer;
 
@@ -244,11 +253,11 @@ void draw_frustum(
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glLineWidth(1);
-	draw_arrow(0, 0,  0, 0, 0, -n, 0.1, 0.1, "near=1.0", 0.075);
-	draw_arrow(l, 0, -n, 0, 0, -n, 0.1, 0, "left", 0.075);
-	draw_arrow(0, 0, -n, r, 0, -n, 0, 0.1, "right", 0.075);
-	draw_arrow(0, b, -n, 0, 0, -n, 0.1, 0, "bottom", 0.075);
-	draw_arrow(0, 0, -n, 0, t, -n, 0, 0.1, "top", 0.075);
+	draw_arrow(0, 0,  0, 0, 0, -n, 0.1, 0.1, "near",   0.075);
+	draw_arrow(l, 0, -n, 0, 0, -n, 0.1, 0.0, "left",   0.075);
+	draw_arrow(0, 0, -n, r, 0, -n, 0.0, 0.1, "right",  0.075);
+	draw_arrow(0, b, -n, 0, 0, -n, 0.1, 0.0, "bottom", 0.075);
+	draw_arrow(0, 0, -n, 0, t, -n, 0.0, 0.1, "top",    0.075);
 }
 
 static void draw_grid1d(
@@ -342,7 +351,13 @@ void display_observer(float frustum_aspect)
 		gluLookAt(3, 1, -5, 0, 0, -2.5, 0, 1, 0);
 	}
 
+#if OPTION_MULTISAMPLE
 	glEnable(GL_MULTISAMPLE);
+#endif
+
+#ifdef GL_DEPTH_CLAMP
+	glEnable(GL_DEPTH_CLAMP);
+#endif
 
 	glDisable(GL_LIGHTING);
 	glDepthMask(GL_TRUE);
@@ -364,6 +379,7 @@ void display_observer(float frustum_aspect)
 void display_view(int const win_width, int const win_height)
 {
 	float const win_aspect = (float)win_width / (float)win_height;
+	frustum.left = -(frustum.right = win_aspect);
 
 	glViewport(0, 0, win_width, win_height);
 	glClearColor(0.3, 0.3, 0.6, 1.);
@@ -383,7 +399,10 @@ void display_view(int const win_width, int const win_height)
 	glLoadIdentity();
 
 	glEnable(GL_DEPTH_TEST);
+
+#if OPTION_MULTISAMPLE
 	glEnable(GL_MULTISAMPLE);
+#endif
 
 	draw_scene();
 
@@ -405,7 +424,7 @@ void display(void)
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | OPTION_GLUT_MULTISAMPLE);
 
 	window_observer = glutCreateWindow("Observer");
 	glutDisplayFunc(display);
