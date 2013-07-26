@@ -130,6 +130,37 @@ static void fatalError(const char *why)
 	exit(0x666);
 }
 
+static int isExtensionSupported(const char *extList, const char *extension)
+{
+ 
+  const char *start;
+  const char *where, *terminator;
+ 
+  /* Extension names should not have spaces. */
+  where = strchr(extension, ' ');
+  if ( where || *extension == '\0' )
+    return 0;
+ 
+  /* It takes a bit of care to be fool-proof about parsing the
+     OpenGL extensions string. Don't be fooled by sub-strings,
+     etc. */
+  for ( start = extList; ; ) {
+    where = strstr( start, extension );
+ 
+    if ( !where )
+      break;
+ 
+    terminator = where + strlen( extension );
+ 
+    if ( where == start || *(where - 1) == ' ' )
+      if ( *terminator == ' ' || *terminator == '\0' )
+        return 1;
+ 
+    start = terminator;
+  }
+  return 0;
+}
+
 static int Xscreen;
 static Atom del_atom;
 static Colormap cmap;
@@ -304,6 +335,12 @@ static void createTheWindow()
 	}
 }
 
+static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
+{
+    fputs("Error at context creation", stderr);
+    return 0;
+}
+
 static void createTheRenderContext()
 {
 	int dummy;
@@ -356,6 +393,8 @@ static void createTheRenderContext()
 	if (!glXMakeContextCurrent(Xdisplay, glX_window_handle, glX_window_handle, render_context)) {
 		fatalError("glXMakeCurrent failed for window\n");
 	}
+
+	glewInit();
 }
 
 static int updateTheMessageQueue()
