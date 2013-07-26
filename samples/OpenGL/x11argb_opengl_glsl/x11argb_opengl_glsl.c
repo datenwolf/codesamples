@@ -311,16 +311,51 @@ static void createTheRenderContext()
 		fatalError("OpenGL not supported by X server\n");
 	}
 
-	render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, True);
-	if (!render_context) {
-		fatalError("Failed to create a GL context\n");
+#if USE_GLX_CREATE_CONTEXT_ATTRIB
+	#define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
+	#define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
+	render_context = NULL;
+	if( isExtensionSupported( glXQueryExtensionsString(Xdisplay, DefaultScreen(Xdisplay)), "GLX_ARB_create_context" ) ) {
+		typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+		glXCreateContextAttribsARBProc glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+		if( glXCreateContextAttribsARB ) {
+			int context_attribs[] =
+			{
+				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+				GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+				//GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+				None
+			};
+
+			int (*oldHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&ctxErrorHandler);
+			
+			render_context = glXCreateContextAttribsARB( Xdisplay, fbconfig, 0, True, context_attribs );
+
+			XSync( Xdisplay, False );
+			XSetErrorHandler( oldHandler );
+
+			fputs("glXCreateContextAttribsARB failed", stderr);
+		} else {
+			fputs("glXCreateContextAttribsARB could not be retrieved", stderr);
+		}
+	} else {
+			fputs("glXCreateContextAttribsARB not supported", stderr);
+	}
+
+	if(!render_context)
+	{
+#else
+	{
+#endif
+		render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, True);
+		if (!render_context) {
+			fatalError("Failed to create a GL context\n");
+		}
 	}
 
 	if (!glXMakeContextCurrent(Xdisplay, glX_window_handle, glX_window_handle, render_context)) {
 		fatalError("glXMakeCurrent failed for window\n");
 	}
-
-	glewInit();
 }
 
 static int updateTheMessageQueue()

@@ -20,7 +20,8 @@ using namespace std;
 #include "terragen.h"
 #include "terrain.h"
 
-Terrain Q;
+std::vector<double> terraindata;
+Terrain Q(&terraindata);
 
 double const water_level=-1.0;
 
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
 	std::string img_filename( terrain_filename );
 	img_filename.replace(img_filename.length()-5, 4, ".png");
 
-	texID=ilutGLLoadImage(img_filename.c_str());
+	texID = ilutGLLoadImage((char*)img_filename.c_str());
 	glBindTexture(GL_TEXTURE_2D, texID);
 
 	int x, y;
@@ -173,12 +174,6 @@ void assign_elevations(Terrain *pT, double *buffer, int width, int height, doubl
 	pT->z[0][1]=( buffer[ PEL(right+bottom*width) ] -t )*k;
 	pT->z[1][1]=( buffer[ PEL(right+top*width) ] -t )*k;
 	pT->z[1][0]=( buffer[ PEL(left+top*width) ] -t )*k;
-
-	pT->z_mean=(
-		pT->z[0][0]+
-		pT->z[0][1]+
-		pT->z[1][1]+
-		pT->z[1][0])*0.25;
 
 	if(pT->is_split())
 	{
@@ -291,7 +286,7 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
-void draw_quad(Terrain *pQ, int LOD=0, double z1=0, double z2=0, double z3=0, double z4=0);
+void draw_quad(Quad *pQ, int LOD=0, double z1=0, double z2=0, double z3=0, double z4=0);
 
 GLdouble cam_pos[3];//={68.0f*scale[0], 44.0f*scale[1], 47.7*scale[2]*0.5};
 double cam_la[3];
@@ -328,8 +323,8 @@ void display()
 
 	cam_pos[0]=dx*width*scale[0];
 	cam_pos[1]=dy*height*scale[1];
-	cam_pos[2]=max(dz*scale[2]*width*3, (20.0f+((Terrain*)Q.get_at(dx, dy))->z_mean)*scale[2]);
-	//cam_pos[2]=(20.0f+((Terrain*)Q.get_at(dx, dy))->z_mean)*scale[2];
+	cam_pos[2]=max(dz*scale[2]*width*3, (20.0f+((Terrain*)Q.get_at(dx, dy))->z_mean())*scale[2]);
+	//cam_pos[2]=(20.0f+((Terrain*)Q.get_at(dx, dy))->z_mean())*scale[2];
 
 	cam_la[0]=width*scale[0]*0.5;
 	cam_la[1]=height*scale[1]*0.5;
@@ -420,16 +415,17 @@ bool in_view(double a[3])
 	return false;
 }
 
-void draw_quad(Terrain *pT, int LOD, double z1, double z2, double z3, double z4)
+void draw_quad(Quad *pQ, int LOD, double z1, double z2, double z3, double z4)
 {
+	Terrain *pT = dynamic_cast<Terrain*>(pQ);
 	bool bRefine=true;
 	bool bInFront=true;
 	
-	double Q[3]={pT->x_mid*width*scale[0], pT->y_mid*height*scale[1], pT->z_mean*scale[2]};
-	double Q1[3]={pT->x1*width*scale[0], pT->y1*height*scale[1], pT->z[0][0]*scale[2]};
-	double Q2[3]={pT->x2*width*scale[0], pT->y1*height*scale[1], pT->z[0][1]*scale[2]};
-	double Q3[3]={pT->x2*width*scale[0], pT->y2*height*scale[1], pT->z[1][1]*scale[2]};
-	double Q4[3]={pT->x1*width*scale[0], pT->y2*height*scale[1], pT->z[1][0]*scale[2]};	
+	double Q[3] ={(*pT->x_mid())*width*scale[0], (*pT->y_mid())*height*scale[1], (pT->z_mean())*scale[2]};
+	double Q1[3]={(*pT->x1())*width*scale[0], (*pT->y1())*height*scale[1], (pT->z[0][0])*scale[2]};
+	double Q2[3]={(*pT->x2())*width*scale[0], (*pT->y1())*height*scale[1], (pT->z[0][1])*scale[2]};
+	double Q3[3]={(*pT->x2())*width*scale[0], (*pT->y2())*height*scale[1], (pT->z[1][1])*scale[2]};
+	double Q4[3]={(*pT->x1())*width*scale[0], (*pT->y2())*height*scale[1], (pT->z[1][0])*scale[2]};	
 	double Qt[3];
 
 	double dir[3];
@@ -563,19 +559,19 @@ void draw_quad(Terrain *pT, int LOD, double z1, double z2, double z3, double z4)
 			else
 				glColor3f(1,1,1);
 			//LUM(one_minus_lod_scale[0]);
-			glTexCoord2f(pT->x1, pT->y1);
+			glTexCoord2f(*pT->x1(), *pT->y1());
 			glVertex3dv(Q1);
 
 			//LUM(one_minus_lod_scale[1]);
-			glTexCoord2f(pT->x2, pT->y1);
+			glTexCoord2f(*pT->x2(), *pT->y1());
 			glVertex3dv(Q2);
 
 			//LUM(one_minus_lod_scale[2]);
-			glTexCoord2f(pT->x2, pT->y2);
+			glTexCoord2f(*pT->x2(), *pT->y2());
 			glVertex3dv(Q3);
 
 			//LUM(one_minus_lod_scale[3]);
-			glTexCoord2f(pT->x1, pT->y2);
+			glTexCoord2f(*pT->x1(), *pT->y2());
 			glVertex3dv(Q4);
 		}
 	}

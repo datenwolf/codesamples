@@ -39,9 +39,9 @@ public:
 	virtual void track_down(double x, double y, int levels);
 	virtual Quad *get_at(double x, double y, int max_level=0, int level=0);
 
-protected:
 	virtual void set_range(double nx1, double nx2, double ny1, double ny2);
 
+protected:
 	Quad(std::vector<double>*);
 	std::vector<double> * const V;
 };

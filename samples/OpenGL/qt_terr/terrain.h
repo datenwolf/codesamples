@@ -4,17 +4,24 @@
 #include "quad.h"
 
 #include <vector>
+#include <math.h>
 
 class Terrain : public Quad
 {
 public:
-	double * const z_mean() {
-		
+	double z_mean_;
+	double z_mean() {
+		if( isnan(z_mean_) ) {
+			return z_mean_ = 
+				( z[0][0] + z[0][1] +
+				  z[1][0] + z[1][1] ) / 4.;
+		}
+		return z_mean_;
 	};
 	double z[2][2];
 
 public:
-	Terrain();
+	Terrain(std::vector<double>* V_) : Quad(V_) { z_mean_ = NAN; }
 
 	virtual void split();
 	virtual void track_down(double x, double y, double nz, int levels);

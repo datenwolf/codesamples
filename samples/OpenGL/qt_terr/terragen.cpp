@@ -16,7 +16,7 @@ typedef uint8_t OCTET[8];
 #define DUET_TO_NUMBER(duet)		((duet[0]|duet[1]<<8))
 #define QUARTET_TO_NUMBER(quartet)	((quartet[0])|(quartet[1]<<8)|(quartet[2]<<16)|(quartet[3]<<24))
 
-int read_terrain(char *filename, double **pbuffer, int *width, int *height, double *scale)
+int read_terrain(char const *filename, double **pbuffer, int *width, int *height, double *scale)
 // [in] filename: path to the file to be read in
 // [out] pbuffer: address of new allocated data buffer
 // [out] width: width of the terrain

@@ -11,6 +11,8 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+#include "linmath.h"
+
 #if defined(GLUT_MULTISAMPLE) && defined(GL_MULTISAMPLE)
 #define OPTION_GLUT_MULTISAMPLE GLUT_MULTISAMPLE
 #define OPTION_MULTISAMPLE 1
@@ -206,6 +208,16 @@ void draw_arrow(
 		draw_strokestring(GLUT_STROKE_ROMAN, annot_size, annotation);
 		glPopMatrix();
 	}
+}
+
+void draw_arc(
+	vec3 center,
+	vec3 a, vec3 b,	
+	float ah, float bh,
+	char const * const annotation,
+	float annot_size )
+{
+	a[0] = b[2];
 }
 
 void draw_frustum(
