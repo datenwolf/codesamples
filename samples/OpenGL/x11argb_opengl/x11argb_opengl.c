@@ -23,11 +23,15 @@
   \_____/  FTB.
 
 ------------------------------------------------------------------------*/
+#define _GNU_SOURCE
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+#include <sys/types.h>
+#include <time.h>
 
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -461,7 +465,13 @@ static void redrawTheWindow()
 	b = fmod(b+0.5, 360.);
 	c = fmod(c+0.25, 360.);
 
+	struct timespec Ta, Tb;
+
+	clock_gettime(CLOCK_MONOTONIC_RAW, &Ta);
  	glXSwapBuffers(Xdisplay, glX_window_handle);
+	clock_gettime(CLOCK_MONOTONIC_RAW, &Tb);
+	
+	fprintf(stderr, "glXSwapBuffers returned after %f ms\n", 1e3*((double)Tb.tv_sec + 1e-6*(double)Tb.tv_nsec) - 1e3*((double)Ta.tv_sec + 1e-6*(double)Ta.tv_nsec));	
 }
 
 int main(int argc, char *argv[])
