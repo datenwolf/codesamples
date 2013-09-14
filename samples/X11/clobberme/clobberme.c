@@ -50,7 +50,7 @@ static void createTheWindow()
 	XWMHints *startup_state;
 	XTextProperty textprop;
 	XSetWindowAttributes attr = {0,};
-	static char *title = "FTB's little OpenGL example - ARGB extension by WXD";
+	static char *title = "A useless clobberable X11 window example by WXD";
 
 	Xdisplay = XOpenDisplay(NULL);
 	if (!Xdisplay) {
