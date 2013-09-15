@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 "This program wastes serious resources of the\n"
 "X11 server it is started on. Do not execute\n"
 "this program on a production X11 session as\n"
-"the allocated resources can not be reclaimed\n"
+"the allocated atoms can not be freed/reused\n"
 "without resetting or quiting the X11 server.\n"
 "\n"
 "To actually perform this, do the following:\n"
