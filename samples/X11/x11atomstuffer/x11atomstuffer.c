@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <time.h>
 #include <unistd.h>
@@ -29,7 +30,8 @@ char const doitkey[] = "wastemyX11server";
 
 int main(int argc, char *argv[])
 {
-	unsigned int i;
+	uint64_t i;
+	unsigned int r = getpid() ^ time(NULL);
 
 	if( argc < 2 || strcmp(argv[1], doitkey) ) {
 		fprintf(stderr,
@@ -57,11 +59,9 @@ int main(int argc, char *argv[])
 	}
 	Xscreen = DefaultScreen(Xdisplay);
 
-	unsigned int r = getpid() ^ time(NULL);
-
 	for(i=0; i < 0xffffffff; i++) {
 		char atomstr[33];
-		snprintf(atomstr,32, "_wasted_0x%08x_0x%08x", r, i);
+		snprintf(atomstr,32, "_wasted_0x%08x_0x%08x", r, (unsigned int)i);
 		XInternAtom(Xdisplay, atomstr, False);
 		if( !(i % 0x00010000 ) ) {
 			fprintf(stderr, "%s\n", atomstr);
