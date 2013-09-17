@@ -18,16 +18,25 @@ void display();
  * In many OpenGL tutorials, and even the reference documentation one can
  * find that an iteger gets cast into a pointer. From the point of view of
  * the C language standard and the interpretation of integers cast to pointer
- * this practice should be strongly discouraged. The far better method
- * is not to cast the offset integer value to a pointer, but to cast the
- * gl...Pointer functions to a type signature that defines the `data` parameter
- * to be an integer. To keep the size of the `data` parameter consistent
- * use the C standard type `uintptr_t` which is guaranted to be large enough
- * to hold the integer representation of a pointer.
+ * this practice should be strongly discouraged.
+ *
+ * The far better method is not to cast the offset integer value to a pointer,
+ * but to cast the `gl...Pointer` functions to a type signature that defines
+ * the `data` parameter to be an integer. To keep the size of the `data`
+ * parameter consistent use the C standard type `uintptr_t` which is guaranted
+ * to be large enough to hold the integer representation of a pointer.
  *
  * The same also goes for the glDraw...Elements functions.
  *
  * Also see http://stackoverflow.com/a/8284829/524368
+ *
+ * A Note to C++ folks reading this: In C++ you'd have to make a cast to the
+ * L-values type signature so that the compiler doesn't warn and/or error
+ * out. In C there's this nice property that a void pointer (`void*`) R-value
+ * can be legally assigned to any pointer type L-value. So because of lazyness
+ * and because this is messing with type signatures I simply cast to a `void*`
+ * which perfectly well assigned to the function pointer signatures instead
+ * of writing `= (void(*)(bla bla bla))...` (or doing a lot of typedefs).
  */
 void (*glfixVertexOffset)(GLint, GLenum, GLsizei, uintptr_t const)        = (void*)glVertexPointer;
 void (*glfixTexCoordOffset)(GLint, GLenum, GLsizei, uintptr_t const)      = (void*)glTexCoordPointer;
