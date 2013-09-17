@@ -34,9 +34,9 @@ void display();
  * L-values type signature so that the compiler doesn't warn and/or error
  * out. In C there's this nice property that a void pointer (`void*`) R-value
  * can be legally assigned to any pointer type L-value. So because of lazyness
- * and because this is messing with type signatures I simply cast to a `void*`
- * which perfectly well assigned to the function pointer signatures instead
- * of writing `= (void(*)(bla bla bla))...` (or doing a lot of typedefs).
+ * and because this is messing with type signatures anyway we simply cast to
+ * a `void*` which perfectly well assignes to the function pointer signatures
+ * instead of writing `= (void(*)(bla bla bla))...` (or doing a lot of typedefs).
  */
 void (*glfixVertexOffset)(GLint, GLenum, GLsizei, uintptr_t const)        = (void*)glVertexPointer;
 void (*glfixTexCoordOffset)(GLint, GLenum, GLsizei, uintptr_t const)      = (void*)glTexCoordPointer;
