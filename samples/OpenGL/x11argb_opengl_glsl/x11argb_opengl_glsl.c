@@ -578,14 +578,8 @@ static void redrawTheWindow(double T)
 
 	struct timespec Ta, Tb;
 
-	clock_gettime(CLOCK_MONOTONIC_RAW, &Ta);
  	glXSwapBuffers(Xdisplay, glX_window_handle);
-	glXWaitGL();
-	clock_gettime(CLOCK_MONOTONIC_RAW, &Tb);
-	
-	fprintf(stderr, "glXSwapBuffers + glXWaitGL returned after %f ms\n",
-	1e3*( (double)Tb.tv_sec + 1e-9*(double)Tb.tv_nsec ) -
-	1e3*( (double)Ta.tv_sec + 1e-9*(double)Ta.tv_nsec ) );	
+	glXWaitGL();	
 }
 
 static double getftime(void) {

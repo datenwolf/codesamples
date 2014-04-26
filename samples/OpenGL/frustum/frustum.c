@@ -412,6 +412,23 @@ struct {
 	float near, far;
 } frustum = {-1, 1, -1, 1, 1, 4};
 
+struct {
+	struct {
+		float phi, theta;
+	} rot;
+} observer;
+
+void observer_motion(int x, int y)
+{
+	int const win_width  = glutGet(GLUT_WINDOW_WIDTH);
+	int const win_height = glutGet(GLUT_WINDOW_HEIGHT);
+
+	observer.rot.phi = -180.f + 360.f * (float)x / (float)win_width;
+	observer.rot.theta = -90.f + 180.f * (float)y / (float)win_height;
+
+	glutPostRedisplay();
+}
+
 void display_observer(float frustum_aspect)
 {
 	int const win_width  = glutGet(GLUT_WINDOW_WIDTH);
@@ -434,8 +451,8 @@ void display_observer(float frustum_aspect)
 	glLoadIdentity();
 	if(1) {
 		glTranslatef(0, 0, -10);
-		glRotatef(15, 1, 0, 0);
-		glRotatef(-15, 0, 1, 0);
+		glRotatef(observer.rot.theta, 1, 0, 0);
+		glRotatef(observer.rot.phi, 0, 1, 0);
 		glTranslatef(0, 0, 2.5);
 	} else {
 		gluLookAt(3, 1, -5, 0, 0, -2.5, 0, 1, 0);
@@ -536,6 +553,8 @@ int main(int argc, char *argv[])
 
 	window_observer = glutCreateWindow("Observer");
 	glutDisplayFunc(display);
+	glutMotionFunc(observer_motion);
+	glutPassiveMotionFunc(observer_motion);
 
 	window_view = glutCreateWindow("Frustum View");
 	glutDisplayFunc(display);
