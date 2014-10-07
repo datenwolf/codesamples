@@ -156,6 +156,7 @@ static void createTheWindow()
 		if(pict_format->direct.alphaMask > 0) {
 			break;
 		}
+		XFree(visual);
 	}
 
 	if(!fbconfig) {
@@ -248,7 +249,7 @@ static void createTheWindow()
 
 static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
 {
-    fputs("Error at context creation", stderr);
+    fputs("Error at context creation\n", stderr);
     return 0;
 }
 
@@ -265,12 +266,12 @@ static void createTheRenderContext()
 	render_context = NULL;
 	if( isExtensionSupported( glXQueryExtensionsString(Xdisplay, DefaultScreen(Xdisplay)), "GLX_ARB_create_context" ) ) {
 		typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-		glXCreateContextAttribsARBProc glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+		glXCreateContextAttribsARBProc glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB("glXCreateContextAttribsARB" );
 		if( glXCreateContextAttribsARB ) {
 			int context_attribs[] =
 			{
-				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-				GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+				GLX_CONTEXT_MAJOR_VERSION_ARB, 2,
+				GLX_CONTEXT_MINOR_VERSION_ARB, 1,
 				//GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 				None
 			};
@@ -281,17 +282,16 @@ static void createTheRenderContext()
 
 			XSync( Xdisplay, False );
 			XSetErrorHandler( oldHandler );
-
-			fputs("glXCreateContextAttribsARB failed", stderr);
 		} else {
-			fputs("glXCreateContextAttribsARB could not be retrieved", stderr);
+			fputs("glXCreateContextAttribsARB could not be retrieved\n", stderr);
 		}
 	} else {
-			fputs("glXCreateContextAttribsARB not supported", stderr);
+			fputs("glXCreateContextAttribsARB not supported\n", stderr);
 	}
 
 	if(!render_context)
 	{
+		fputs("using fallback\n", stderr);
 #else
 	{
 #endif
