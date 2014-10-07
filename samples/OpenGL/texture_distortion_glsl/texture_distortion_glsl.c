@@ -43,7 +43,7 @@ static const GLchar *fragment_shader_source =
 "   float ts = gl_TexCoord[0].s;\n"
 "   vec2 mod_texcoord = gl_TexCoord[0].st*vec2(1., 2.) + vec2(0, -0.5 + 0.5*sin(T + 1.5*ts*pi));\n"
 "   if( mod_texcoord.t < 0. || mod_texcoord.t > 1. ) { discard; }\n"
-"   gl_FragColor = -texture2D(texCMYK, mod_texcoord) + texture2D(texRGB, gl_TexCoord[0].st);\n"
+"   gl_FragColor.rgb = -texture2D(texCMYK, mod_texcoord).xyz + texture2D(texRGB, gl_TexCoord[0].st).xyz;\n"
 "}\n\0";
 GLuint shaderFragment = 0;
 

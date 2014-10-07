@@ -1,0 +1,3 @@
+[submodule "extra/linmath.h"]
+	path = extra/linmath.h
+	url = git@github.com:datenwolf/linmath.h.git

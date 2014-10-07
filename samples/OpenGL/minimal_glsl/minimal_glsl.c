@@ -38,7 +38,7 @@ static const GLchar *fragment_shader_source =
 "uniform sampler2D texRGB;"
 "void main()"
 "{"
-"   gl_FragColor = -texture2D(texCMYK, gl_TexCoord[0].st) + texture2D(texRGB, gl_TexCoord[0].st);"
+"   gl_FragColor = -texture2D(texCMYK, gl_TexCoord[0].st) + texture2D(texRGB, gl_TexCoord[0].st); "
 "}\0";
 GLuint shaderFragment = 0;
 

@@ -24,11 +24,16 @@
 
 ------------------------------------------------------------------------*/
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
+
+#include <sys/types.h>
+#include <time.h>
 
 #include <GL/glew.h>
 #include <GL/glx.h>
@@ -62,7 +67,7 @@ static const GLchar *fragment_shader_source =
 "   vec2 mod_texcoord = gl_TexCoord[0].st*vec2(1., 2.) + vec2(0, -0.5 + 0.5*sin(T + 1.5*ts*pi));\n"
 "   if( mod_texcoord.t < 0. || mod_texcoord.t > 1. ) { discard; }\n"
 "   gl_FragColor = -texture2D(texCMYK, mod_texcoord) + texture2D(texRGB, gl_TexCoord[0].st);\n"
-"   gl_FragColor.a = -0.5;\n"
+"   gl_FragColor.a = 1.;\n"
 "}\n\0";
 GLuint shaderFragment = 0;
 
@@ -128,6 +133,37 @@ static void fatalError(const char *why)
 {
 	fprintf(stderr, "%s", why);
 	exit(0x666);
+}
+
+static int isExtensionSupported(const char *extList, const char *extension)
+{
+ 
+  const char *start;
+  const char *where, *terminator;
+ 
+  /* Extension names should not have spaces. */
+  where = strchr(extension, ' ');
+  if ( where || *extension == '\0' )
+    return 0;
+ 
+  /* It takes a bit of care to be fool-proof about parsing the
+     OpenGL extensions string. Don't be fooled by sub-strings,
+     etc. */
+  for ( start = extList; ; ) {
+    where = strstr( start, extension );
+ 
+    if ( !where )
+      break;
+ 
+    terminator = where + strlen( extension );
+ 
+    if ( where == start || *(where - 1) == ' ' )
+      if ( *terminator == ' ' || *terminator == '\0' )
+        return 1;
+ 
+    start = terminator;
+  }
+  return 0;
 }
 
 static int Xscreen;
@@ -304,6 +340,12 @@ static void createTheWindow()
 	}
 }
 
+static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
+{
+    fputs("Error at context creation", stderr);
+    return 0;
+}
+
 static void createTheRenderContext()
 {
 	int dummy;
@@ -311,9 +353,46 @@ static void createTheRenderContext()
 		fatalError("OpenGL not supported by X server\n");
 	}
 
-	render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, True);
-	if (!render_context) {
-		fatalError("Failed to create a GL context\n");
+#if USE_GLX_CREATE_CONTEXT_ATTRIB
+	#define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
+	#define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
+	render_context = NULL;
+	if( isExtensionSupported( glXQueryExtensionsString(Xdisplay, DefaultScreen(Xdisplay)), "GLX_ARB_create_context" ) ) {
+		typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+		glXCreateContextAttribsARBProc glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+		if( glXCreateContextAttribsARB ) {
+			int context_attribs[] =
+			{
+				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+				GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+				//GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+				None
+			};
+
+			int (*oldHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&ctxErrorHandler);
+			
+			render_context = glXCreateContextAttribsARB( Xdisplay, fbconfig, 0, True, context_attribs );
+
+			XSync( Xdisplay, False );
+			XSetErrorHandler( oldHandler );
+
+			fputs("glXCreateContextAttribsARB failed", stderr);
+		} else {
+			fputs("glXCreateContextAttribsARB could not be retrieved", stderr);
+		}
+	} else {
+			fputs("glXCreateContextAttribsARB not supported", stderr);
+	}
+
+	if(!render_context)
+	{
+#else
+	{
+#endif
+		render_context = glXCreateNewContext(Xdisplay, fbconfig, GLX_RGBA_TYPE, 0, True);
+		if (!render_context) {
+			fatalError("Failed to create a GL context\n");
+		}
 	}
 
 	if (!glXMakeContextCurrent(Xdisplay, glX_window_handle, glX_window_handle, render_context)) {
@@ -497,7 +576,10 @@ static void redrawTheWindow(double T)
     draw_cube();
     popModelview();
 
+	struct timespec Ta, Tb;
+
  	glXSwapBuffers(Xdisplay, glX_window_handle);
+	glXWaitGL();	
 }
 
 static double getftime(void) {
