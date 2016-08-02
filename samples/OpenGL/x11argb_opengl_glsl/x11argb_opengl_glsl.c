@@ -26,6 +26,7 @@
 
 #define _GNU_SOURCE
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,8 +42,8 @@
 #include <X11/extensions/Xrender.h>
 #include <X11/Xutil.h>
 
-#define USE_CHOOSE_FBCONFIG
-#define USE_GLX_CREATE_WINDOW
+#define USE_GLX_CREATE_WINDOW 1
+#define USE_DOUBLEBUFFER 1
 
 static const GLchar *vertex_shader_source =
 "#version 120\n"
@@ -182,7 +183,11 @@ static int width, height;
 static int VisData[] = {
 GLX_RENDER_TYPE, GLX_RGBA_BIT,
 GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+#if USE_DOUBLEBUFFER
 GLX_DOUBLEBUFFER, True,
+#else
+GLX_DOUBLEBUFFER, False,
+#endif
 GLX_RED_SIZE, 8,
 GLX_GREEN_SIZE, 8,
 GLX_BLUE_SIZE, 8,
@@ -296,7 +301,7 @@ static void createTheWindow()
 		fatalError("Couldn't create the window\n");
 	}
 
-#ifdef USE_GLX_CREATE_WINDOW
+#if USE_GLX_CREATE_WINDOW
 	int glXattr[] = { None };
 	glX_window_handle = glXCreateWindow(Xdisplay, fbconfig, window_handle, glXattr);
 	if( !glX_window_handle ) {
@@ -578,8 +583,12 @@ static void redrawTheWindow(double T)
 
 	struct timespec Ta, Tb;
 
+#if USE_DOUBLEBUFFER
  	glXSwapBuffers(Xdisplay, glX_window_handle);
-	glXWaitGL();	
+#else
+	glFlush();
+	usleep(10000);
+#endif
 }
 
 static double getftime(void) {
@@ -608,8 +617,23 @@ int main(int argc, char *argv[])
 	if( !init_resources() )
 		return -1;
 
-	while (updateTheMessageQueue()) {
-		redrawTheWindow(getftime());
+	int n_dT_accum = 0;
+	float dT_accum = 0;
+	while( updateTheMessageQueue() ) {
+		float const dT = getftime();
+		redrawTheWindow(dT);
+
+		dT_accum += dT;
+		++n_dT_accum;
+
+		if( 100 < n_dT_accum ) {
+			fprintf(stderr, "%d frames in %fs (~%fFPS)\n",
+				n_dT_accum,
+				dT_accum,
+				(float)n_dT_accum / dT_accum);
+			dT_accum = 0.f;
+			n_dT_accum = 0;
+		}
 	}
 
 	return 0;
