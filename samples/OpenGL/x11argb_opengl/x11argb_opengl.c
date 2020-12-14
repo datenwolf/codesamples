@@ -211,6 +211,7 @@ static void createTheWindow()
 	}
 
 #if USE_GLX_CREATE_WINDOW
+	fputs("glXCreateWindow ", stderr);
 	int glXattr[] = { None };
 	glX_window_handle = glXCreateWindow(Xdisplay, fbconfig, window_handle, glXattr);
 	if( !glX_window_handle ) {
@@ -471,7 +472,7 @@ static void redrawTheWindow()
  	glXSwapBuffers(Xdisplay, glX_window_handle);
 	clock_gettime(CLOCK_MONOTONIC_RAW, &Tb);
 	
-	fprintf(stderr, "glXSwapBuffers returned after %f ms\n", 1e3*((double)Tb.tv_sec + 1e-6*(double)Tb.tv_nsec) - 1e3*((double)Ta.tv_sec + 1e-6*(double)Ta.tv_nsec));	
+	// fprintf(stderr, "glXSwapBuffers returned after %f ms\n", 1e3*((double)Tb.tv_sec + 1e-6*(double)Tb.tv_nsec) - 1e3*((double)Ta.tv_sec + 1e-6*(double)Ta.tv_nsec));	
 }
 
 int main(int argc, char *argv[])

@@ -168,10 +168,12 @@ void draw_arrow(
 		  by + (-0.866*d[1] - 0.5*b[1])*bh,
 		  bz + (-0.866*d[2] - 0.5*b[2])*bh }
 	};
-	GLushort const idx[][2] = {
+	GLushort const idx_line[][2] = {
 		{0, 1},
-		{0, 2}, {0, 3},
-		{1, 4}, {1, 5}
+	};
+	GLushort const idx_heads[][3] = {
+		{0, 2, 3},
+		{1, 4, 5}
 	};
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -180,7 +182,8 @@ void draw_arrow(
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, pos);
 
-	glDrawElements(GL_LINES, 2*5, GL_UNSIGNED_SHORT, idx);
+	glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, idx_line);
+	glDrawElements(GL_TRIANGLES, 2*3, GL_UNSIGNED_SHORT, idx_heads);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	if(annotation) {
