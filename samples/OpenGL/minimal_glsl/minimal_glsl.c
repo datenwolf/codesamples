@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 static void pushModelview()
 {

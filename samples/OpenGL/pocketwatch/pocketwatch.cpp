@@ -14,7 +14,7 @@ void idle();
 int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA|GLUT_DOUBLE|GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_RGBA|GLUT_DOUBLE|GLUT_DEPTH|GLUT_MULTISAMPLE);
 
 	glutCreateWindow("PocketWatch");
 	glutDisplayFunc(display);
@@ -37,6 +37,8 @@ void init()
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+
+	glEnable(GL_MULTISAMPLE);
 }
 
 float light_position[]={-0.5,0.5,1,0};

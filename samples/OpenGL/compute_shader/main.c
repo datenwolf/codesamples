@@ -246,6 +246,20 @@ void gldebugcallback(
 	fprintf(stderr, "(GL) %s\n", message);
 }
 
+static
+void glinfodump(void)
+{
+	printf(
+		"OpenGL vendor:   %s\n"
+		"OpenGL renderer: %s\n"
+		"OpenGL version:  %s\n",
+		"  GLSL version:  %s\n",
+		glGetString(GL_VENDOR),
+		glGetString(GL_RENDERER),
+		glGetString(GL_VERSION),
+		glGetString(GL_SHADING_LANGUAGE_VERSION) );
+}
+
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
@@ -253,7 +267,7 @@ int main(int argc, char *argv[])
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0,0);
 	glutInitWindowSize(win_width, win_height);
-	glutCreateWindow("Compute Shader");
+	glutCreateWindow("compute shader point overdraw benchmark");
 	if( GLEW_OK != glewInit() ) { return 1; }
 
 	glDebugMessageCallback((GLDEBUGPROC)gldebugcallback, NULL);
