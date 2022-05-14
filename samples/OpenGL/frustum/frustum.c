@@ -11,7 +11,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-#include "linmath.h"
+#include <linmath.h>
 
 #if defined(GLUT_MULTISAMPLE) && defined(GL_MULTISAMPLE)
 #define OPTION_GLUT_MULTISAMPLE GLUT_MULTISAMPLE
