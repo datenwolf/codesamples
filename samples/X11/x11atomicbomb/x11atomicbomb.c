@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------
- * What happens if you stuff the X11 server with large and large amounts
+ * What happens if you bomb the X11 server with large and large amounts
  * of atoms? When does it run out of memory? How is its performance
  * impaired by this? This is a little program to experimenting with
  * torturing the X11 server by overfeeding it with atoms.
@@ -70,4 +70,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
